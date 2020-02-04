@@ -102,3 +102,7 @@ trees
 
 # pycharm
 .idea
+
+# data
+
+*.pickle

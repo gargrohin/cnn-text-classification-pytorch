@@ -16,9 +16,15 @@ def train(train_iter, dev_iter, model, args):
     last_step = 0
     model.train()
     for epoch in range(1, args.epochs+1):
-        for batch in train_iter:
-            feature, target = batch.text, batch.label
-            feature.data.t_(), target.data.sub_(1)  # batch first, index align
+
+        for feature, target in train_iter:
+            
+        # for batch in train_iter:
+        #     feature, target = batch.text, batch.label
+            # with torch.no_grad():
+            #     feature.t_()
+            #     target.sub_(1)  # batch first, index align
+            # print(feature.size(), target.size())
             if args.cuda:
                 feature, target = feature.cuda(), target.cuda()
 
@@ -34,13 +40,13 @@ def train(train_iter, dev_iter, model, args):
             steps += 1
             if steps % args.log_interval == 0:
                 corrects = (torch.max(logit, 1)[1].view(target.size()).data == target.data).sum()
-                accuracy = 100.0 * corrects/batch.batch_size
+                accuracy = 100.0 * corrects/args.batch_size
                 sys.stdout.write(
                     '\rBatch[{}] - loss: {:.6f}  acc: {:.4f}%({}/{})'.format(steps, 
-                                                                             loss.data[0], 
+                                                                             loss.data, 
                                                                              accuracy,
                                                                              corrects,
-                                                                             batch.batch_size))
+                                                                             args.batch_size))
             if steps % args.test_interval == 0:
                 dev_acc = eval(dev_iter, model, args)
                 if dev_acc > best_acc:
@@ -58,16 +64,16 @@ def train(train_iter, dev_iter, model, args):
 def eval(data_iter, model, args):
     model.eval()
     corrects, avg_loss = 0, 0
-    for batch in data_iter:
-        feature, target = batch.text, batch.label
-        feature.data.t_(), target.data.sub_(1)  # batch first, index align
+    for feature, target in data_iter:
+        # feature, target = batch.text, batch.label
+        # feature.data.t_(), target.data.sub_(1)  # batch first, index align
         if args.cuda:
             feature, target = feature.cuda(), target.cuda()
 
         logit = model(feature)
         loss = F.cross_entropy(logit, target, size_average=False)
 
-        avg_loss += loss.data[0]
+        avg_loss += loss.data
         corrects += (torch.max(logit, 1)
                      [1].view(target.size()).data == target.data).sum()
 

@@ -4,6 +4,7 @@ import random
 import tarfile
 import urllib
 from torchtext import data
+import h5py
 
 
 class TarDataset(data.Dataset):
@@ -108,3 +109,4 @@ class MR(TarDataset):
 
         return (cls(text_field, label_field, examples=examples[:dev_index]),
                 cls(text_field, label_field, examples=examples[dev_index:]))
+        
